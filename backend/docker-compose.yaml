@@ -1,0 +1,59 @@
+services:
+  api-gateway:
+    build: ./api_gateway
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - PRODUCT_SERVICE_URL=http://product-service:3002
+      - ORDER_SERVICE_URL=http://order-service:3003
+    depends_on:
+      - auth-service
+      - product-service
+      - order-service
+
+  auth-service:
+    build: ./auth_service
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - MONGO_URI=mongodb://mongo:27017/auth_db
+      - JWT_SECRET=supersecretkey123meowmeownigga
+    depends_on:
+      - mongo
+
+  product-service:
+    build: ./product_service
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - MONGO_URI=mongodb://mongo:27017/product_db
+    depends_on:
+      - mongo
+
+  order-service:
+    build: ./order_service
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+      - MONGO_URI=mongodb://mongo:27017/order_db
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - PRODUCT_SERVICE_URL=http://product-service:3002
+    depends_on:
+      - mongo
+      - auth-service
+      - product-service
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
