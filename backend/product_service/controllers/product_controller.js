@@ -52,4 +52,27 @@ const getProducts = async (req, res) => {
     }
 }
 
-module.exports = { addProduct, getProductById, getProducts }
+const reduceStock = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { quantity } = req.body;
+
+        const product = await Product.findById(id);
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+        if (product.stock < quantity) {
+            return res.status(400).json({ message: "Insufficient stock" });
+        }
+
+        product.stock -= quantity;
+        await product.save();
+
+        return res.status(200).json({ message: "Stock updated successfully", stock: product.stock });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { addProduct, getProductById, getProducts, reduceStock };

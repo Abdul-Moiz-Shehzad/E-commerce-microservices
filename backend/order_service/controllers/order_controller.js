@@ -33,6 +33,12 @@ const createOrder = async (req, res) => {
             return res.status(404).json({ status: 404, message: "User not found in Auth Service" });
         }
 
+        await fetch(`${PRODUCT_SERVICE_URL}/api/products/${targetProductId}/reduce-stock`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ quantity })
+        });
+
         const newOrder = await Order.create({
             userId,
             productId: targetProductId,
