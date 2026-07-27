@@ -1,0 +1,3 @@
+@echo off
+echo Starting Microservices Architecture (Frontend + Backend)...
+docker compose up --build

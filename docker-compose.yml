@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  auth_service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PATH: auth_service
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - JWT_SECRET=supersecretkey_auth_service
+      - MONGO_URI=mongodb://mongo:27017/microservices_auth
+
+  product_service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PATH: product_service
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - MONGO_URI=mongodb://mongo:27017/microservices_products
+
+  order_service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PATH: order_service
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+      - MONGO_URI=mongodb://mongo:27017/microservices_orders
+
+  api_gateway:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE_PATH: api_gateway
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - AUTH_SERVICE_URL=http://auth_service:3001
+      - PRODUCT_SERVICE_URL=http://product_service:3002
+      - ORDER_SERVICE_URL=http://order_service:3003
+    depends_on:
+      - auth_service
+      - product_service
+      - order_service
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:5000/api
+    depends_on:
+      - api_gateway
